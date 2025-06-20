@@ -1,0 +1,4 @@
+RapidFuzz
+SpeechRecognition
+pyttsx4
+PyQT6
