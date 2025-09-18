@@ -1,4 +1,4 @@
-from Database import Database
+from models.Database import Database
 
 class Word(Database):
     '''
@@ -7,6 +7,12 @@ class Word(Database):
 
     __word = None
     __isUsed = False
+
+    ## Local attributes
+    __tableName = "words"
+    __primaryKey = "word"
+
+    # any additional local attributes
 
     def __init__(self, word = None, isUsed = False):
         '''
@@ -17,8 +23,8 @@ class Word(Database):
         self.setWord(word)
         self.setIsUsed(isUsed)
 
-        if self.exists():
-            self.getWordFromDB()
+        if self.__exists():
+            self.__getWordFromDB()
 
     '''
     Getters and Setters
@@ -29,6 +35,9 @@ class Word(Database):
     
     def getIsUsed(self)->bool:
         return self.__isUsed == 1
+    
+    def getPrimaryKey(self):
+        return self.getWord()
     
     def setWord(self, word):
         self.__word = word
@@ -42,11 +51,11 @@ class Word(Database):
     Object Related Mapping Methods
     '''
 
-    def exists(self):
+    def __exists(self):
         retCode = False
-        if self.getWord():
-            sql = "SELECT EXISTS(SELECT 1 FROM words WHERE word = ?) AS row_exists"
-            params = (self.getWord(),) #comma converts it into a tuple
+        if self.getPrimaryKey():
+            sql = f"SELECT EXISTS(SELECT 1 FROM {self.__tableName} WHERE {self.__primaryKey} = ?) AS row_exists"
+            params = (self.getPrimaryKey(),) #comma converts it into a tuple
             result = self.query(sql, params)
             for row in result:
                 if row['row_exists'] == 1:
@@ -54,7 +63,7 @@ class Word(Database):
         
         return retCode
     
-    def getWordFromDB(self):
+    def __getWordFromDB(self):
         sql = "SELECT word, isUsed FROM words WHERE word = ?"
         params = (self.getWord(),)
         result = self.query(sql, params)
@@ -71,9 +80,18 @@ class Word(Database):
         result = db.query(sql, params)
         for row in result:
             return Word(row['word'], row['isUsed'])
+        else:
+            return None 
+        
+    @classmethod
+    def resetWords(cls):
+        db = Database()
+        sql = "UPDATE words SET isUsed = 0"
+        params = ()
+        db.query(sql, params)
 
     def save(self):
-        if self.exists():
+        if self.__exists():
             self.__update()
         else:
             self.__insert()
@@ -95,10 +113,18 @@ class Word(Database):
     def markAsUsed(self):
         self.setIsUsed(True)
 
+    '''
+    Utility Methods
+    '''
+
+    def __str__(self):
+        return f"{self.getWord()}, {self.getIsUsed()}"
+    
+# TESTING
 def test():
     word = Word("test", False)
     word.save()
-    print(word.getWord(),word.getIsUsed())
+    print(word)
 
     word = Word('test')
     word.markAsUsed()
@@ -106,9 +132,14 @@ def test():
     print(word.getWord(), word.getIsUsed())
 
     word = Word.getRandomWord()
-    word.markAsUsed()
-    word.save()
-    print("Random:",word.getWord(),word.getIsUsed())
+    if word:
+        print("Random:",word.getWord(),word.getIsUsed())
+        word.markAsUsed()
+        word.save()
+        print("Random:",word.getWord(),word.getIsUsed())
+    else:
+        print("No unused random words are available please reset.")
+        Word.resetWords()
 
 if __name__ == "__main__":
     test()

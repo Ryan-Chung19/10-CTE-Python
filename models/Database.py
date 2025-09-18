@@ -1,9 +1,10 @@
 import sqlite3
 
 class Database:
-    __dbname = "Game.db"
 
-    def __init__(self,dbname="Game.db"):
+    __dbname = "models/Game.db"
+
+    def __init__(self,dbname="models/Game.db"):
         if dbname:
             self.__dbname = dbname
     

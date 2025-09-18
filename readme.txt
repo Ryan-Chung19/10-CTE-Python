@@ -10,3 +10,7 @@
 5. download and install sqlite studio in windows.
 
 6. create some infrastructure classes for our project.
+
+7. Now actually do the code.
+
+8. The previous steps were six sevennnnnnn :p 

@@ -1,0 +1,15 @@
+SELECT 
+    p.userName, p.firstName, p.lastName,
+    w.word, w.isUsed,
+    r.resultId, r.attempts, r.resultDate
+    
+FROM
+    results AS r, 
+    persons AS p,
+    words AS w
+WHERE
+    p.userName = r.userName AND
+    w.word = r.word
+ORDER BY
+    p.userName,
+    r.resultDate DESC
