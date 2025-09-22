@@ -87,8 +87,8 @@ class Person(Database):
             self.setFirstName(row['firstName'])
             self.setLastName(row['lastName'])
 
-    def getResultsForPerson(self):
+    # def getResultsForPerson(self):
 
-        self.__results = []
-        self.__results = Result.loadResultsForPersons(self)
-        return self.__results
+    #     self.__results = []
+    #     self.__results = Result.loadResultsForPersons(self)
+    #     return self.__results
