@@ -3,7 +3,8 @@ from utilities.NLP import NLP
 from utilities.Avatar import Avatar
 from models.Word import Word
 from models.Person import Person
-import random
+import pygame
+
 
 class SpellingGame(Avatar):
     
@@ -11,7 +12,7 @@ class SpellingGame(Avatar):
         super().__init__(name="Teacher", useSR=True, vix = 2)
         self.nlp = NLP()
 
-        # this line for adding the database
+        self.words = Word.getRandomWord
 
         self.say(f"Hello, I am your virtual {self.getName()}. Get ready to spell some words.", show = True, rate =200)
 
@@ -69,4 +70,4 @@ def test():
         game.run()
 
 if __name__ == "__main__":
-    test()
+    test() 

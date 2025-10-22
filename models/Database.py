@@ -4,9 +4,11 @@ class Database:
 
     __dbname = "models/Game.db"
 
-    def __init__(self,dbname="models/Game.db"):
+    def __init__(self,dbname=None):
         if dbname:
             self.__dbname = dbname
+        else:
+            self.__dbname = Database.__dbname
     
     def query(self, sql, params=()):
         result = None
