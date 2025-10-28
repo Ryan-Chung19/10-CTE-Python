@@ -17,18 +17,19 @@ class SpellingGame(Avatar):
     def getPlayer(self):
         """Use speech recognition for player name only"""
         # Temporarily enable SR just for this question
-        self.useSR = True
-        response = self.listen("Please tell me your name.", useSr=True, show=True)
-        self.useSR = False  # Disable SR for the rest of the game
+        while True:
+            self.useSR = True
+            response = self.listen("Please tell me your name.", useSr=True, show=True)
+            self.useSR = False  # Disable SR for the rest of the game
 
-        name = self.nlp.getNameByEntityType(response)
-        if name:
-            self.say(f"Nice to meet you, {name}.", show=True)
-            return Person(userName=name, firstName=name)
-        else:
-            # fallback to typed input if SR fails
-            typed_name = input("I didn't catch that. Please type your name: ")
-            return Person(userName=typed_name, firstName=typed_name)
+            name = self.nlp.getNameByEntityType(response)
+            
+            if name:
+                self.say(f"Nice to meet you, {name}.", show=True)
+                return Person(userName=name, firstName=name)
+            else:
+                self.say("I didn't catch that. Please say your name again.", show=True)
+                
     
     def giveWord(self):
         """Get a random unused word from database"""
@@ -38,7 +39,7 @@ class SpellingGame(Avatar):
             return chosenWord
         else:
             self.say("You have completed all the words!", show=True)
-            self.say(f"That was some good practice {self.getName()}")
+            self.say(f"That was some good practice.")
             Word.resetWords()
             return None
 
