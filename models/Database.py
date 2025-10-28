@@ -13,22 +13,24 @@ class Database:
     def query(self, sql, params=()):
         result = None
 
+        # Normalize command check but keep original SQL for execution
+        cmd = sql.strip().split()[0].lower()
+
         with sqlite3.connect(self.__dbname) as conn:
-            sql = sql.strip().lower()
             conn.row_factory = sqlite3.Row
             cur = conn.cursor()
             cur.execute(sql, params)
 
-            isSelect = sql.startswith("select")
-            isInsert = sql.startswith("insert")
-
-            if isSelect:
+            if cmd == "select":
                 result = cur.fetchall()
-            elif isInsert:
+            elif cmd in ("insert", "update", "delete"):
                 conn.commit()
-                result = cur.lastrowid
+                if cmd == "insert":
+                    result = cur.lastrowid
+                else:
+                    result = cur.rowcount  # number of rows affected
             else:
                 conn.commit()
                 result = None
-    
+
         return result

@@ -38,17 +38,16 @@ class SpellingGame(Avatar):
             return chosenWord
         else:
             self.say("You have completed all the words!", show=True)
-            self.say(f"That was some good practice {self.getName()}")
             Word.resetWords()
-            return None
+            return Word.getRandomWord()
 
     def spellCheck(self, chosenWord):
         """Use typed input for spelling"""
         attempt = input("Please spell the word: ").strip()
         if attempt.lower() == chosenWord.getWord().lower():
-            self.say("Correct!", show=True)
+            self.say("✅ Correct!", show=True)
         else:
-            self.say(f"Incorrect. The correct spelling is: {chosenWord.getWord()}", show=True)
+            self.say(f"❌ Incorrect. The correct spelling is: {chosenWord.getWord()}", show=True)
 
         chosenWord.markAsUsed()
         chosenWord.save()
@@ -63,11 +62,8 @@ class SpellingGame(Avatar):
         play = True
         while play:
             chosenWord = self.giveWord()
-            if not chosenWord:
-                self.say("Okay, thanks for playing! Goodbye!", show=True)
-                break
-                
-            self.spellCheck(chosenWord)
+            if chosenWord:
+                self.spellCheck(chosenWord)
             
             again = input("Would you like to try another word? (yes/no): ").strip().lower()
             if again not in ["yes", "y"]:
