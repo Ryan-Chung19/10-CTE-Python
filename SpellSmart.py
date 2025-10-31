@@ -3,6 +3,7 @@ from utilities.NLP import NLP
 from utilities.Avatar import Avatar
 from models.Word import Word
 from models.Person import Person
+from rapidfuzz import fuzz
 
 
 class SpellingGame(Avatar):
@@ -44,15 +45,22 @@ class SpellingGame(Avatar):
             return None
 
     def spellCheck(self, chosenWord):
-        """Use typed input for spelling"""
-        attempt = input("Please spell the word: ").strip()
-        if attempt.lower() == chosenWord.getWord().lower():
-            self.say("Correct!", show=True)
-        else:
-            self.say(f"Incorrect. The correct spelling is: {chosenWord.getWord()}", show=True)
+        correct_word = chosenWord.getWord().lower()
+        while True:
+            attempt = input("Please spell the word: ").strip()
+            accuracy = fuzz.ratio(attempt, correct_word)
 
-        chosenWord.markAsUsed()
-        chosenWord.save()
+            if accuracy == 100:
+                self.say("Correct! Perfect spelling.", show=True)
+                chosenWord.markAsUsed()
+                chosenWord.save()
+                break
+            else:
+                self.say(f"Incorrect. Accuracy: {accuracy:.1f}%", show=True)
+                self.say(f"Let's try again. Spell the word {correct_word} again.", show=True)
+
+            chosenWord.markAsUsed()
+            chosenWord.save()
 
     def run(self):
         player = None
