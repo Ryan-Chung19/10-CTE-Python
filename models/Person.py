@@ -73,6 +73,18 @@ class Person(Database):
                     retCode = True
 
         return retCode
+    
+    def save(self):
+        sql = f"""
+            INSERT INTO {__class__.__tableName} ({', '.join(__class__.__attributes)})
+            VALUES (?, ?, ?)
+            ON CONFLICT({__class__.__primaryKey}) 
+            DO UPDATE SET
+                firstName = excluded.firstName,
+                lastName = excluded.lastName
+        """
+        params = (self.getUserName(), self.getFirstName(), self.getLastName())
+        self.query(sql, params)
 
     def __getPersonFromDB(self):
         '''
@@ -92,3 +104,4 @@ class Person(Database):
     #     self.__results = []
     #     self.__results = Result.loadResultsForPersons(self)
     #     return self.__results
+

@@ -9,7 +9,6 @@ from rapidfuzz import fuzz
 class SpellingGame(Avatar):
     
     def __init__(self):
-        # ✅ Start with speech recognition OFF
         super().__init__(name="Teacher", useSR=False, vix=2)
         self.nlp = NLP()
 
@@ -17,19 +16,35 @@ class SpellingGame(Avatar):
 
     def getPlayer(self):
         """Use speech recognition for player name only"""
-        # Temporarily enable SR just for this question
         while True:
             self.useSR = True
-            response = self.listen("Please tell me your name.", useSr=True, show=True)
+            first_name_response = self.listen("Please tell me your first name.", useSr=True, show=True)
             self.useSR = False  # Disable SR for the rest of the game
+            first_name = self.nlp.getNameByEntityType(first_name_response)
 
-            name = self.nlp.getNameByEntityType(response)
+            if not first_name:
+                self.say("I didn't catch that, please say your first name again.", show=True)
+                continue
+
+            self.useSR = True
+            last_name_response = self.listen("Please tell me your last name.",useSr=True, show=True)
+            self.useSR = False
+            last_name = self.nlp.getNameByEntityType(last_name_response)
             
-            if name:
-                self.say(f"Nice to meet you, {name}.", show=True)
-                return Person(userName=name, firstName=name)
-            else:
-                self.say("I didn't catch that. Please say your name again.", show=True)
+            if not last_name:
+                self.say("I didn't catch that. Please say your last name again.", show=True)
+                continue
+
+            self.say("Now please type your user name.", show=True)
+            username = input("Username: ").strip()
+            
+
+            player = Person(userName=username, firstName = first_name, lastName = last_name)
+            player.save()
+
+            self.say(f"Details saved successfully. Welcome {first_name}.")
+
+            return player
                 
     
     def giveWord(self):
