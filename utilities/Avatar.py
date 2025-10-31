@@ -81,7 +81,7 @@ class Avatar():
             except Exception as e:
                 print(f"Error listening: '{e}'. ")
                 self.say(prompt, show)
-                words = input("Please type your responses:> ")
+                words = input("Please type your responses: ")
         
         else:
             self.say(prompt, show = True)
