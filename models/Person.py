@@ -1,5 +1,5 @@
 from models.Database import Database
-# from models.Result import Result
+from models.Result import Result
 
 class Person(Database):
     ''' Person Table Attributes '''
