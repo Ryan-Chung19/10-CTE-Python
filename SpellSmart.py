@@ -4,6 +4,7 @@ from utilities.Avatar import Avatar
 from models.Word import Word
 from models.Person import Person
 from rapidfuzz import fuzz
+from models.Result import Result
 
 
 class SpellingGame(Avatar):
@@ -19,7 +20,7 @@ class SpellingGame(Avatar):
         while True:
             self.say("Would you like to create a new user, or use an existing one?", show=True)
 
-            choice = input("Type 'New' to create a new user or 'existing' to use an existing one.")
+            choice = input("Type 'New' to create a new user or 'existing' to use an existing one: ")
 
             # NEW USER PART
             if choice in ["new", "n", "create", "c"]:
@@ -83,7 +84,7 @@ class SpellingGame(Avatar):
             else:
                 self.say("I didn't understand that. Please type 'new' or 'existing'.", show=True)
 
-                
+
     def giveWord(self):
         """Get a random unused word from database"""
         chosenWord = Word.getRandomWord()
@@ -96,23 +97,55 @@ class SpellingGame(Avatar):
             Word.resetWords()
             return None
 
-    def spellCheck(self, chosenWord):
+    def spellCheck(self, chosenWord, player=None):
+        """Check spelling accuracy, repeat until correct, save results, and return stats."""
         correct_word = chosenWord.getWord().lower()
+        attempts = 0
+
         while True:
-            attempt = input("Please spell the word: ").strip()
+            attempt = input("Please spell the word: ").strip().lower()
+            attempts += 1
             accuracy = fuzz.ratio(attempt, correct_word)
 
             if accuracy == 100:
-                self.say("Correct! Perfect spelling.", show=True)
+                self.say("Correct! Perfect spelling!", show=True)
                 chosenWord.markAsUsed()
                 chosenWord.save()
-                break
+
+                if player is not None:
+                    result = Result(
+                        userName=player.getUserName(),
+                        word=chosenWord.getWord(),
+                        attempts=attempts
+                    )
+                    result.save()
+
+                return {
+                    "word": chosenWord.getWord(),
+                    "accuracy": 100,
+                    "attempts": attempts
+                }
+
             else:
                 self.say(f"Incorrect. Accuracy: {accuracy:.1f}%", show=True)
-                self.say(f"Let's try again. Spell the word {correct_word} again.", show=True)
+                self.say(f"Let's try again. Spell the word '{correct_word}'.", show=True)
 
-            chosenWord.markAsUsed()
-            chosenWord.save()
+    # Display of results
+    def displayResultsSummary(self, results):
+        """Display a summary of the user's spelling session."""
+        if not results:
+            self.say("No results to show. Maybe next time!", show=True)
+            return
+
+        total_words = len(results)
+        correct_words = sum(1 for r in results if r["accuracy"] == 100)
+
+        self.say(f"\n Congratulations! You got {correct_words} out of {total_words} words correct!\n", show=True)
+
+        for r in results:
+            self.say(f"{r['word']}  {r['accuracy']}%  Attempts: {r['attempts']}", show=True)
+
+
 
     def run(self):
         player = None
@@ -120,20 +153,28 @@ class SpellingGame(Avatar):
             player = self.getPlayer()
             if not player:
                 self.say("I didn't catch your name. Please try again.", show=True)
-        
+
+        session_results = []  
+
         play = True
         while play:
             chosenWord = self.giveWord()
+
             if not chosenWord:
-                self.say("Okay, thanks for playing! Goodbye!", show=True)
+                self.say("You have completed all the words!", show=True)
                 break
-                
-            self.spellCheck(chosenWord)
-            
+
+            result_info = self.spellCheck(chosenWord, player)
+            session_results.append(result_info)
+
             again = input("Would you like to try another word? (yes/no): ").strip().lower()
             if again not in ["yes", "y"]:
                 self.say("Okay, thanks for playing! Goodbye!", show=True)
                 play = False
+
+        self.displayResultsSummary(session_results)
+        Word.resetWords()
+
 
 
 def test():
