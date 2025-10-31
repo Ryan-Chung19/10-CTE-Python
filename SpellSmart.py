@@ -17,36 +17,73 @@ class SpellingGame(Avatar):
     def getPlayer(self):
         """Use speech recognition for player name only"""
         while True:
-            self.useSR = True
-            first_name_response = self.listen("Please tell me your first name.", useSr=True, show=True)
-            self.useSR = False  # Disable SR for the rest of the game
-            first_name = self.nlp.getNameByEntityType(first_name_response)
+            self.say("Would you like to create a new user, or use an existing one?", show=True)
 
-            if not first_name:
-                self.say("I didn't catch that, please say your first name again.", show=True)
-                continue
+            choice = input("Type 'New' to create a new user or 'existing' to use an existing one.")
 
-            self.useSR = True
-            last_name_response = self.listen("Please tell me your last name.",useSr=True, show=True)
-            self.useSR = False
-            last_name = self.nlp.getNameByEntityType(last_name_response)
-            
-            if not last_name:
-                self.say("I didn't catch that. Please say your last name again.", show=True)
-                continue
+            # NEW USER PART
+            if choice in ["new", "n", "create", "c"]:
+                while True:
 
-            self.say("Now please type your user name.", show=True)
-            username = input("Username: ").strip()
-            
+                    self.useSR = True
+                    first_name_response = self.listen("Please tell me your first name.", useSr=True, show=True)
+                    self.useSR = False  # Disable SR for the rest of the game
+                    first_name = self.nlp.getNameByEntityType(first_name_response)
 
-            player = Person(userName=username, firstName = first_name, lastName = last_name)
-            player.save()
+                    if not first_name:
+                        self.say("I didn't catch that, please say your first name again.", show=True)
+                        continue
 
-            self.say(f"Details saved successfully. Welcome {first_name}.")
+                    self.useSR = True
+                    last_name_response = self.listen("Please tell me your last name.",useSr=True, show=True)
+                    self.useSR = False
+                    last_name = self.nlp.getNameByEntityType(last_name_response)
+                    
+                    if not last_name:
+                        self.say("I didn't catch that. Please say your last name again.", show=True)
+                        continue
 
-            return player
+                    self.say("Now please type your user name.", show=True)
+                    username = input("Username: ").strip()
+
+                    if not username:
+                        self.say("Username cannot be empty. Please try again.", show=True)
+                        continue
+
+                    existing_player = Person(userName=username)
+                    if existing_player.getFirstName() is not None:
+                        self.say("That user name already exists. Please choose another one.", show=True)
+                        continue
+                    else:
+                        break
+                    
+
+                player = Person(userName=username, firstName = first_name, lastName = last_name)
+                player.save()
                 
-    
+                self.say(f"Details saved successfully. Welcome {first_name}.")
+
+                return player
+            
+            elif choice in ["existing", "exist", "old", "e"]:
+                while True:
+                    self.say("Please type your existing user name.")
+                    username = input("Username: ").strip()
+
+                    if not username:
+                        self.say("User name cannot be empty. Please try again.", show=True)
+                        continue
+
+                    player = Person(userName=username)
+                    if player.getFirstName() is None:
+                        self.say("No user found with that user name. Please try again or create a new one.", show = True)
+                        continue
+                    else:
+                        self.say(f"Welcome back {player.getFirstName()}!", show=True)
+            else:
+                self.say("I didn't understand that. Please type 'new' or 'existing'.", show=True)
+
+                
     def giveWord(self):
         """Get a random unused word from database"""
         chosenWord = Word.getRandomWord()

@@ -24,14 +24,26 @@ class NLP():
     def getNameByEntityType(self, speech):
         names = []
         doc = self.nlp(speech)
+
         for ent in doc.ents:
-            print(ent.text, ent.start_char, ent.end_char, ent.label_)
+            # print(ent.text, ent.start_char, ent.end_char, ent.label_)
 
             if ent.label_ == 'PERSON':
                 names.append(ent.text)
 
-        name = " ".join(names)
-        return name 
+        if not names:
+            for token in doc:
+                if token.pos == "PROPN":
+                    names.append(token.text)
+
+        if not names:
+            for token in doc:
+                if token.is_alpha:
+                    names.append(token.text)
+                    break
+
+
+        return " ".join(names)
 
 
 def main():
